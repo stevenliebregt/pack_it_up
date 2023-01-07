@@ -1,0 +1,11 @@
+[package]
+name = "pack_it_up"
+description = "pack_it_up is a simple Rust library that implements various bin packing algorithms"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Steven Liebregt <stevenliebregt@outlook.com>"]
+repository = "https://github.com/stevenliebregt/pack_it_up"
+keywords = ["bin-packing"]
+
+[dependencies]
