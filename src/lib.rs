@@ -72,7 +72,7 @@ impl<T> Bin<T> {
         T: Pack,
     {
         Self {
-            remaining_capacity: capacity - item.size(),
+            remaining_capacity: capacity.saturating_sub(item.size()),
             contents: vec![item],
         }
     }
@@ -82,7 +82,7 @@ impl<T> Bin<T> {
     where
         T: Pack,
     {
-        self.remaining_capacity -= item.size();
+        self.remaining_capacity = self.remaining_capacity.saturating_sub(item.size());
         self.contents.push(item);
     }
 
