@@ -32,10 +32,10 @@
 //!     // The above will result in 2 full bins
 //!     assert_eq!(2, bins.len());
 //!
-//!     let first_bin_contents = bins.remove(0).contents();
+//!     let first_bin_contents = bins.remove(0).into_contents();
 //!     assert_eq!(vec![MyItem{ some_content: 3, size: 19 }, MyItem { some_content: 1, size: 1 }], first_bin_contents);
 //!
-//!     let second_bin_contents = bins.remove(0).contents();
+//!     let second_bin_contents = bins.remove(0).into_contents();
 //!     assert_eq!(vec![MyItem{ some_content: 4, size: 17 }, MyItem { some_content: 2, size: 2 }, MyItem { some_content: 5, size: 1 }], second_bin_contents);
 //! }
 //! ```
@@ -87,7 +87,12 @@ impl<T> Bin<T> {
     }
 
     /// Get the contents of the bin.
-    pub fn contents(self) -> Vec<T> {
+    pub fn contents(&self) -> &[T] {
+        &self.contents
+    }
+
+    /// Get the contents of the bin.
+    pub fn into_contents(self) -> Vec<T> {
         self.contents
     }
 }
