@@ -141,6 +141,57 @@ mod tests {
 
         assert_eq!(expected, bins);
     }
+
+    #[test]
+    fn test_dataset_a_k1_seq() {
+        let (test_data, bin_size) = generate_test_set_a();
+        let mut packer = NextKFitPacker::new(1, bin_size);
+
+        // This contains the expected bin outputs at every step:
+        // if None, expecting zero bins,
+        // if Some, expecting one bin whose contents is the MyItems with the given sizes.
+        //
+        // e.g: On the 7th invocation of packer.add(),
+        // we expect to get Bin {contents: [MyItem(1), MyItem(1), MyItem(1), MyItem(1), MyItem(3), MyItem(4)], remaining_capacity: 9}.
+        let mut expected = [
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(vec![1, 1, 1, 1, 3, 4]),
+            None,
+            Some(vec![10, 10]),
+            Some(vec![10]),
+            Some(vec![19]),
+            // This bin is only produced after finalizing
+            Some(vec![19]),
+        ]
+        .map(|opt| {
+            opt.map(|vec| Bin {
+                contents: vec.iter().map(|i| MyItem { size: *i }).collect::<Vec<_>>(),
+                remaining_capacity: bin_size - vec.iter().sum::<usize>(),
+            })
+        })
+        .into_iter();
+
+        for item in test_data {
+            let produced_bin = packer.add(item).into_iter().next();
+            let expected_bin = expected.next().unwrap();
+            match (&expected_bin, &produced_bin) {
+                (Some(expected), Some(actual)) => assert_eq!(expected, actual),
+                (None, None) => (),
+                _ => panic!("Expected {:?}, got {:?}", expected_bin, produced_bin),
+            }
+        }
+
+        let final_bins = packer.finalize();
+        for (bin, expected) in final_bins.iter().zip(expected) {
+            assert_eq!(bin.contents, expected.unwrap().into_contents());
+        }
+    }
+
     #[test]
     fn test_dataset_a_k2() {
         let (test_data, bin_size) = generate_test_set_a();
