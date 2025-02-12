@@ -58,14 +58,16 @@ pub struct Bin<T> {
 }
 
 impl<T> Bin<T> {
+    /// Create a new empty bin.
     #[doc(hidden)]
-    pub(crate) fn with_capacity(capacity: usize) -> Self {
+    pub(crate) const fn with_capacity(capacity: usize) -> Self {
         Self {
             contents: vec![],
             remaining_capacity: capacity,
         }
     }
 
+    /// Create a new bin with a single item.
     #[doc(hidden)]
     pub(crate) fn with_item(capacity: usize, item: T) -> Self
     where
@@ -77,12 +79,32 @@ impl<T> Bin<T> {
         }
     }
 
+    /// Create a new bin with a single item, given its size.
+    #[doc(hidden)]
+    pub(crate) fn with_item_and_size(capacity: usize, item: T, size: usize) -> Self {
+        Self {
+            remaining_capacity: capacity.saturating_sub(size),
+            contents: vec![item],
+        }
+    }
+
+    /// Add an item to this bin, and update the remaining capacity.
+    ///
+    /// Uses saturating subtraction: if you push a too-big item,
+    /// then the bin will have a remaining capacity of zero.
     #[doc(hidden)]
     pub(crate) fn add(&mut self, item: T)
     where
         T: Pack,
     {
         self.remaining_capacity = self.remaining_capacity.saturating_sub(item.size());
+        self.contents.push(item);
+    }
+
+    /// Add an item to this bin (given its size) and update the remaining capacity.
+    #[doc(hidden)]
+    pub(crate) fn add_with_size(&mut self, item: T, size: usize) {
+        self.remaining_capacity = self.remaining_capacity.saturating_sub(size);
         self.contents.push(item);
     }
 
@@ -104,7 +126,7 @@ pub mod tests {
     /// A dummy struct for testing
     /// Realistic structs would have more fields but that makes testing harder.
     #[allow(dead_code)]
-    #[derive(Debug, Eq, PartialEq)]
+    #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
     pub struct MyItem {
         pub size: usize,
     }
@@ -117,17 +139,21 @@ pub mod tests {
 
     /// Generates a set with the following data and a bin size:
     ///   1,1,1,1,3,4,10,10,10,19,19
-    /// Naive binning would result in 5 bins
+    /// Naive binning would result in 5 bins:
+    /// ```
     ///   1,1,1,1,3,4   -> 11
     ///   10, 10        -> 20
     ///   10            -> 10
     ///   19            -> 19
     ///   19            -> 19
-    /// Optimal binning would result in 4 bins
+    /// ```
+    /// Optimal binning would result in 4 bins:
+    /// ```
     ///   19,1          -> 20
     ///   19,1          -> 20
     ///   10,10         -> 20
     ///   10,1,1,3,4    -> 19
+    /// ```
     pub fn generate_test_set_a() -> (Vec<MyItem>, usize) {
         (
             vec![
