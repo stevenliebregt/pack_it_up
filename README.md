@@ -9,6 +9,7 @@ pack_it_up is a simple Rust library that implements various bin packing algorith
 
 - First-fit
 - First-fit-decreasing
+- Next-fit
 
 ### Basic example
 

@@ -1,7 +1,7 @@
 [package]
 name = "pack_it_up"
 description = "pack_it_up is a simple Rust library that implements various bin packing algorithms"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 license = "MIT"
 authors = ["Steven Liebregt <stevenliebregt@outlook.com>"]
