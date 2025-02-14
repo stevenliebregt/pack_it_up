@@ -42,6 +42,7 @@
 
 pub mod offline;
 pub mod online;
+pub mod wrapper;
 
 /// Allows the bin packing algorithm to know how big an item is, which can then be used to
 /// figure out in which bin it fits.
@@ -95,6 +96,21 @@ impl<T> Bin<T> {
     pub fn into_contents(self) -> Vec<T> {
         self.contents
     }
+
+    /// Transform the bin's contents into a different type.
+    ///
+    /// Note that the bin's capacity is simply copied from the old bin to the new one,
+    /// and overflows are not considered
+    /// if the transformation would increase the size of the bin's contents,
+    /// that is allowed here.
+    /// In fact, the new type doesn't even have to implement [`crate::Pack`],
+    /// so it might not even have a reasonable notion of size.
+    pub fn map<U>(self, transform_fn: impl Fn(T) -> U) -> Bin<U> {
+        Bin {
+            contents: self.contents.into_iter().map(transform_fn).collect(),
+            remaining_capacity: self.remaining_capacity,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -112,6 +128,20 @@ pub mod tests {
     impl Pack for MyItem {
         fn size(&self) -> usize {
             self.size
+        }
+    }
+
+    /// A dummy struct for testing.
+    /// The same struct as [`MyItem`], but it doesn't implement [`Pack`].
+    #[allow(dead_code)]
+    #[derive(Debug, Eq, PartialEq)]
+    pub struct MyItemUnpacked {
+        pub size: usize,
+    }
+
+    impl MyItem {
+        pub fn make_unpacked(self) -> MyItemUnpacked {
+            MyItemUnpacked { size: self.size }
         }
     }
 
