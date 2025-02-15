@@ -58,8 +58,7 @@ where
         // Find the first bin that the item fits in
         match bins
             .iter_mut()
-            .filter(|bin| item.size() <= bin.remaining_capacity)
-            .next()
+            .find(|bin| item.size() <= bin.remaining_capacity)
         {
             Some(bin) => bin.add(item),
             None => bins.push(Bin::with_item(bin_size, item)),

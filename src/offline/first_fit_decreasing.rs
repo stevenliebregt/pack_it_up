@@ -11,6 +11,11 @@ where
     assert!(bin_size > 0, "Bin size must be greater than 0");
 
     // Sort the items in decreasing order
+    // TODO: the following line could have been possibly replaced by
+    //   items.sort_unstable_by_key(Pack::size);
+    // but doing that somehow breaks the ordering
+    // that this function requires to give the correct answer?!?!
+    #[allow(clippy::unnecessary_sort_by)]
     items.sort_unstable_by(|a, b| b.size().cmp(&a.size()));
 
     let lower_bound: usize = ((items.iter().map(|item| item.size()).sum::<usize>() as f64)
@@ -29,7 +34,6 @@ where
 ///
 /// This function will be cloned for each item
 /// (but if it's a simple function pointer or a non-capturing closure, then it is a no-op).
-
 pub fn first_fit_decreasing_by_key<T, SizeFunc>(
     bin_size: usize,
     items: Vec<T>,
@@ -40,12 +44,20 @@ where
 {
     assert!(bin_size > 0, "Bin size must be greater than 0");
 
-    // Sort the items in decreasing order
+    // Wrap items in a SizedWrapper with the key function
+    // This should be a low-to-no-impact operation if the key function is Copy
+    // (because SizedWrapper is a zero-overhead struct in that case)
     let mut items: Vec<_> = items
         .into_iter()
         .map(|item| SizedWrapper::new(key_func.clone(), item))
         .collect();
 
+    // Sort the items in decreasing order
+    // TODO: the following line could have been possibly replaced by
+    //   items.sort_unstable_by_key(Pack::size);
+    // but doing that somehow breaks the ordering
+    // that this function requires to give the correct answer?!?!
+    #[allow(clippy::unnecessary_sort_by)]
     items.sort_unstable_by(|a, b| b.size().cmp(&a.size()));
 
     let lower_bound: usize = ((items.iter().map(|item| item.size()).sum::<usize>() as f64)
