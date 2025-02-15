@@ -11,7 +11,7 @@ where
     assert!(bin_size > 0, "Bin size must be greater than 0");
 
     // Sort the items in decreasing order
-    items.sort_unstable_by(|a, b| b.size().cmp(&a.size()));
+    items.sort_unstable_by_key(Pack::size);
 
     let lower_bound: usize = ((items.iter().map(|item| item.size()).sum::<usize>() as f64)
         / (bin_size as f64))
@@ -29,7 +29,6 @@ where
 ///
 /// This function will be cloned for each item
 /// (but if it's a simple function pointer or a non-capturing closure, then it is a no-op).
-
 pub fn first_fit_decreasing_by_key<T, SizeFunc>(
     bin_size: usize,
     items: Vec<T>,
@@ -46,7 +45,7 @@ where
         .map(|item| SizedWrapper::new(key_func.clone(), item))
         .collect();
 
-    items.sort_unstable_by(|a, b| b.size().cmp(&a.size()));
+    items.sort_unstable_by_key(Pack::size);
 
     let lower_bound: usize = ((items.iter().map(|item| item.size()).sum::<usize>() as f64)
         / (bin_size as f64))

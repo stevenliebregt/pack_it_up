@@ -1,5 +1,3 @@
-use std::usize;
-
 use crate::{Bin, Pack};
 
 use super::OnlinePacker;

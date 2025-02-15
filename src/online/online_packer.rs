@@ -42,7 +42,7 @@ pub trait OnlinePacker<Item> {
     fn pack_all<Iterable>(
         self,
         mut items: Iterable,
-    ) -> Result<Vec<Bin<Item>>, (OnlinePackerError<Item>, Self, Iterable, Vec<Bin<Item>>)>
+    ) -> Result<Vec<Bin<Item>>, PackAllError<Item, Self, Iterable>>
     where
         Self: Sized,
         Iterable: Iterator<Item = Item>,
@@ -52,13 +52,39 @@ pub trait OnlinePacker<Item> {
         while let Some(item) = items.next() {
             match packer.try_add(item) {
                 Ok(closed) => closed_bins.extend(closed),
-                Err(err) => return Err((err, packer, items, closed_bins)),
+                Err(err) => {
+                    return Err(PackAllError {
+                        err,
+                        packer,
+                        items,
+                        closed_bins,
+                    })
+                }
             }
         }
 
         closed_bins.extend(packer.finalize());
         Ok(closed_bins)
     }
+}
+
+/// An error that occurred in the middle of a [`OnlinePacker::pack_all`] call.
+/// It contains all the state you need to resume the process.
+#[derive(Debug)]
+pub struct PackAllError<Item, Packer, Iterable>
+where
+    Packer: OnlinePacker<Item>,
+    Iterable: Iterator<Item = Item>,
+{
+    /// The error that occurred in the middle of consuming the given iterator.
+    pub err: OnlinePackerError<Item>,
+    /// The packer that you were using. It has not been finalized, and it might have some items in it, so you can use it again.
+    pub packer: Packer,
+    /// The [`Iterator`] of items that you passed in. It has not been fully consumed yet:
+    /// the last item taken out of it is the one in the `err` field.
+    pub items: Iterable,
+    /// The bins that we have successfully closed so far.
+    pub closed_bins: Vec<Bin<Item>>,
 }
 
 /// Error returned when an item cannot be added to an online packer.

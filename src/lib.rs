@@ -6,38 +6,41 @@
 //! use pack_it_up::Pack;
 //! use pack_it_up::offline::first_fit_decreasing::first_fit_decreasing;
 //!
+//! /// This is the struct you want to pack into bins.
+//! /// In this example, it only has two fields:
+//! /// some content and the item's size.
 //! #[derive(Debug, Eq, PartialEq)]
 //! struct MyItem {
 //!     some_content: i32,
 //!     size: usize,
 //! }
 //!
+//! /// This trait tells the algorithms how big the item is
 //! impl Pack for MyItem {
 //!     fn size(&self) -> usize {
 //!         self.size
 //!     }
 //! }
 //!
-//! fn main() {
-//!     let my_items = vec![
-//!         MyItem { some_content: 1, size: 1, },
-//!         MyItem { some_content: 2, size: 2, },
-//!         MyItem { some_content: 3, size: 19, },
-//!         MyItem { some_content: 4, size: 17, },
-//!         MyItem { some_content: 5, size: 1, },
-//!     ];
+//! let my_items = vec![
+//!     MyItem { some_content: 1, size: 1, },
+//!     MyItem { some_content: 2, size: 2, },
+//!     MyItem { some_content: 3, size: 19, },
+//!     MyItem { some_content: 4, size: 17, },
+//!     MyItem { some_content: 5, size: 1, },
+//! ];
 //!
-//!     let mut bins = first_fit_decreasing(20, my_items);
+//! // Packing the items into bins where the total size of each bin is at most 20
+//! let mut bins = first_fit_decreasing(20, my_items);
 //!
-//!     // The above will result in 2 full bins
-//!     assert_eq!(2, bins.len());
+//! // The above will result in 2 full bins
+//! assert_eq!(2, bins.len());
 //!
-//!     let first_bin_contents = bins.remove(0).into_contents();
-//!     assert_eq!(vec![MyItem{ some_content: 3, size: 19 }, MyItem { some_content: 1, size: 1 }], first_bin_contents);
+//! let first_bin_contents = bins.remove(0).into_contents();
+//! assert_eq!(vec![MyItem{ some_content: 3, size: 19 }, MyItem { some_content: 1, size: 1 }], first_bin_contents);
 //!
-//!     let second_bin_contents = bins.remove(0).into_contents();
-//!     assert_eq!(vec![MyItem{ some_content: 4, size: 17 }, MyItem { some_content: 2, size: 2 }, MyItem { some_content: 5, size: 1 }], second_bin_contents);
-//! }
+//! let second_bin_contents = bins.remove(0).into_contents();
+//! assert_eq!(vec![MyItem{ some_content: 4, size: 17 }, MyItem { some_content: 2, size: 2 }, MyItem { some_content: 5, size: 1 }], second_bin_contents);
 //! ```
 
 pub mod offline;
